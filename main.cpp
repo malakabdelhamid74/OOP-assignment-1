@@ -73,31 +73,22 @@ void InvertColors(Image &inputImage) {
 
 void AdjustBrightness(Image &inputImage ,int chosenOption , double p) {
 
-    if (chosenOption == 1) {
-        for (int i = 0; i< inputImage.width ;++i) {
-            for (int j = 0; j< inputImage.height;++j) {
-                for (int k = 0; k < 3; ++k) {
-
-                    int darkenedChannelValue = inputImage(i,j,k) -static_cast<int> (p/100.0 * inputImage(i,j,k)) ;
-                    inputImage(i,j,k) = darkenedChannelValue;
-                }
-            }
-        }
-    }
-    else if (chosenOption == 2) {
 
         for (int i = 0; i< inputImage.width ;++i) {
             for (int j = 0; j< inputImage.height;++j) {
                 for (int k = 0; k < 3; ++k) {
-
-                    int lightenedChannelValue = inputImage(i,j,k) + ( static_cast<int> ( p/100.0 * inputImage(i,j,k) ) ) ;
-                    if (lightenedChannelValue >255) {lightenedChannelValue=255;}
-                    inputImage(i,j,k) = lightenedChannelValue;
+                    if (chosenOption==1) {
+                        int darkenedChannelValue = inputImage(i,j,k) -static_cast<int> (p/100.0 * inputImage(i,j,k)) ;
+                        inputImage(i,j,k) = darkenedChannelValue;
+                    }
+                    else if (chosenOption==2) {
+                        int lightenedChannelValue = inputImage(i,j,k) + ( static_cast<int> ( p/100.0 * inputImage(i,j,k) ) ) ;
+                        if (lightenedChannelValue >255) {lightenedChannelValue=255;}
+                        inputImage(i,j,k) = lightenedChannelValue;
+                    }
                 }
             }
         }
-
-    }
 
 }
 
