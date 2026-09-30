@@ -1,2 +1,31 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+ #include<iostream>
+using namespace std;
+#include "Image_Class.h"
+
+int main() {
+    Image image("luffy.jpg");
+
+    for (int i = 0; i< image.width; ++i){
+        for (int j = 0; j < image.height; ++j) {
+
+            unsigned int average = 0;
+
+            for (int k = 0; k < 3; ++k){
+                average = average + image(i, j, k);                
+            }
+            average = average / 3;
+
+            image(i, j, 0) = average;
+            image(i, j, 1) = average;
+            image(i, j, 2) = average;
+
+        }
+    }
+image.saveImage("luffy.png");
+
+std ::cout << "luffy.png" << std::endl;
+    return 0;
+
+}
