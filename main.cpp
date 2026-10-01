@@ -6,35 +6,46 @@ Image currentImage;
 
 string inputFileName;
 string savingFileName;
-string newName;
+
+// for menu input
 int optionNum;
+char savingOption;
+bool isSaved;
+
+// for AdjustBrightness function
 int filterOptionNum;
 int angle;
 double percentage;
+
+// for RotateImage function
 int desired_width, desired_height;
 
 
-
+//malak
 void ShowMenu();
 void InvertColors(Image &inputImage);
 void AdjustBrightness(Image &inputImage , int chosenOption , double p );
+//sama
 void BlackWhite(Image &inputImage);
 void RotateImage(Image &inputImage);
-void greyscale(Image& inputimage);
+//Rawan
+void greyscale(Image& inputImage);
 void flip(Image& image, int option);
+
+//salma
 
 void paintPixels (int i , int j, Image &image);
 void frame (Image &image);
 Image resize (Image &image, int w, int h);
+
+
 
 int main() {
     cout << "Welcome to our Image Editor\n";
 
         cout<<"Please enter the image file name: ";
         cin >> inputFileName;
-    currentImage.loadNewImage(inputFileName);
-
-
+        currentImage.loadNewImage(inputFileName);
 
     while (true) {
         ShowMenu();
@@ -46,11 +57,29 @@ int main() {
                 currentImage.loadNewImage(inputFileName);
                 break;
             case 2: //save
-                cout<<"Please enter the file name to save: ";
-                cin>> savingFileName;
-                currentImage.saveImage(savingFileName);
-                cout<<"the image is saved successfully\n";
-               
+                if (isSaved) {
+                    cout<<"The image is already saved";
+                    break;
+                }
+                cout << "Do you want to save on the same file? (Y/N) : ";
+                cin >> savingOption;
+
+                if (savingOption == 'Y' || savingOption == 'y') {
+                    savingFileName = inputFileName;
+                    currentImage.saveImage(savingFileName);
+                    cout << "the image is saved successfully!\n";
+                    system(savingFileName.c_str());
+                }
+                else if (savingOption == 'N' ||savingOption == 'n') {
+                    cout << "Please enter the file name to save:  ";
+                    cin >> savingFileName;
+                    currentImage.saveImage(savingFileName);
+                    cout << "the image is saved successfully!\n";
+                    system(savingFileName.c_str());
+                }else {
+                    cout<<"Invalid answer\n";
+                }
+
                 break;
 
           case 11: // f1
@@ -80,20 +109,15 @@ int main() {
                 break; 
             case 16 :
                 RotateImage(currentImage);
-                break;
-                cout<<"the image is saved successfully!\n";
-                system(savingFileName.c_str());
+                cout<<"the image is rotated!\n";
                 break;
 
             case 17 ://f7
                 cout<< "OPTIONS\n 1.Darken\n 2.Lighten\nPlease enter the option number and percentage :";
                 cin >> filterOptionNum>> percentage;
                 AdjustBrightness(currentImage, filterOptionNum, percentage);
-                system(inputFileName.c_str());
                 cout<<"the image brightness is adjusted successfully!\n";
                 break;
-
-           
 
             case 18:
                 cout<<"Enter the new width: ";
@@ -102,7 +126,6 @@ int main() {
                 cin>>desired_height;
                 currentImage= resize(currentImage, desired_width, desired_height);
                 cout<<"the image was resized successfully!\n";
-                system(inputFileName.c_str());
                 break;
 
             case  0:
@@ -132,7 +155,6 @@ void InvertColors(Image &inputImage) {
 
 void AdjustBrightness(Image &inputImage ,int chosenOption , double p) {
 
-
         for (int i = 0; i< inputImage.width ;++i) {
             for (int j = 0; j< inputImage.height;++j) {
                 for (int k = 0; k < 3; ++k) {
@@ -154,8 +176,12 @@ void AdjustBrightness(Image &inputImage ,int chosenOption , double p) {
 void ShowMenu() {
     cout << "\n1.Load a new image\n"
             "2.Save\n"
+
             "FILTERS\n"
             " 11.Greyscale\n"
+
+            "\nFILTERS\n"
+
             " 12.Black White\n"
             " 13.Invert Colors\n"
             " 14.frame\n"
@@ -199,7 +225,7 @@ void RotateImage(Image &inputImage) {
 
     if (angle == 90) {
 
-        Image rotated(inputImage.height, inputImage.width);
+        Image rotated(inputImage.width,inputImage.height);
 
         for (int i = 0; i < inputImage.width; ++i) {
             for (int j = 0; j < inputImage.height; ++j) {
@@ -234,7 +260,7 @@ void RotateImage(Image &inputImage) {
 
     else if (angle == 270) {
 
-        Image rotated(inputImage.height, inputImage.width);
+        Image rotated(inputImage.width,inputImage.height);
 
         for (int i = 0; i < inputImage.width; ++i) {
             for (int j = 0; j < inputImage.height; ++j) {
@@ -306,6 +332,7 @@ void flip(Image& image, int option){
     }
 }
 
+
 //pixel painting function
 void paintPixels (int i , int j, Image &image){
     image(i,j,0)=48;
@@ -373,8 +400,8 @@ Image resize (Image &image, int w, int h){
 
     for (int i = 0; i<new_image.width; i++){
         for (int j = 0; j<new_image.height;j++){
-            int pw = i *((double) image.width / new_image.width);
-            int ph = j *((double) image.height / new_image.height);
+            int pw = i *(static_cast<double>(image.width) / new_image.width);
+            int ph = j *(static_cast<double> (image.height) / new_image.height);
             for (int k =0; k<new_image.channels; k++){
                 new_image(i, j, k) = image(pw, ph, k);
 
