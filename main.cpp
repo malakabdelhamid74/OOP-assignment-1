@@ -11,7 +11,6 @@ int optionNum;
 int filterOptionNum;
 int angle;
 double percentage;
-int angle;
 int desired_width, desired_height;
 
 
@@ -307,67 +306,6 @@ void flip(Image& image, int option){
     }
 }
 
-void RotateImage(Image &inputImage) {
-
-    cout << "Enter rotation angle (90, 180, or 270): ";
-    cin >> angle;
-
-    if (angle == 90) {
-
-        Image rotated(inputImage.height, inputImage.width);
-
-        for (int i = 0; i < inputImage.width; ++i) {
-            for (int j = 0; j < inputImage.height; ++j) {
-                for (int k = 0; k < inputImage.channels; ++k) {
-
-                    rotated(inputImage.height - 1 - j, i, k)
-                        = inputImage(i, j, k);
-                }
-            }
-        }
-
-        inputImage = rotated;
-    }
-
-    else if (angle == 180) {
-
-        Image rotated(inputImage.width, inputImage.height);
-
-        for (int i = 0; i < inputImage.width; ++i) {
-            for (int j = 0; j < inputImage.height; ++j) {
-                for (int k = 0; k < inputImage.channels; ++k) {
-
-                    rotated(inputImage.width - 1 - i,
-                            inputImage.height - 1 - j, k)
-                        = inputImage(i, j, k);
-                }
-            }
-        }
-
-        inputImage = rotated;
-    }
-
-    else if (angle == 270) {
-
-        Image rotated(inputImage.height, inputImage.width);
-
-        for (int i = 0; i < inputImage.width; ++i) {
-            for (int j = 0; j < inputImage.height; ++j) {
-                for (int k = 0; k < inputImage.channels; ++k) {
-
-                    rotated(j, inputImage.width - 1 - i, k)
-                        = inputImage(i, j, k);
-                }
-            }
-        }
-
-        inputImage = rotated;
-    }
-
-    else {
-        cout << "Invalid rotation angle\n";
-    }
-}
 //pixel painting function
 void paintPixels (int i , int j, Image &image){
     image(i,j,0)=48;
