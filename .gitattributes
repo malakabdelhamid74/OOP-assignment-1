@@ -1,37 +1,62 @@
 # Auto detect text files and perform LF normalization
 * text=auto
- #include<iostream>
- using namespace std;
- #include"Image_Class.h"
+int main() {
+ case 11: // f1
+ greyscale(image);
+ cout << "Greyscale filter is applied" << endl;
+ break;
 
- int main(){
+ case 15: // f5
+ cout << "options\n 1.horizontal\n 2.Vertical\n please enter the option number:" << endl;
+ cin >> option_number;
+ flip(image, option_number);
+cout << "Image is flipped" << endl;
+ break;
 
-int x;
-cin>>x;
-cout<<"0 for horizontal flip and 1  for verticle flip"<<endl;
-
-Image image("samurai.jpg");
-Image final("samurai.jpg");
+ void greyscale(Image& inputimage){
 
 
-for(int i = 0; i<Image.width; i++) {
-for(int j = 0; j<Image.height; j++){
-for(int k = 0; k<3; k++){
- 
- if (x==0)  //horizontal flip
-final(i, j, k) = image((image.width-1)-i, j, k);
-else  //vertical flip
-final(i, j, k) = image(i, (image.height -1)-j, k);
+for (int i = 0; i < inputimage.width; i++){
+    for (int j = 0; j < inputimage.height; j++){
 
- 
- }
- }
+        unsigned int average = 0;
+
+        for (int k = 0; k<3; k++){
+            average = average + inputimage(i, j, k);
+        }
+
+        average = average / 3;
+        inputimage(i, j, 0) = average;
+        inputimage(i, j, 1) = average;
+        inputimage(i, j, 2) = average;
+    }
+}
 }
 
-image.saveImage("samurai.png");
-final.saveImage("final.png");
+ void flip(Image& image, int option){
 
-std::cout<<"final.png"<<std::endl;
-}
+Image final("image_flipped.jpg", image.width, image.height);
 
+    for (int i = 0; i < image.width; i++){
+        for (int j = 0; j < image.height; j++){
+            for (int k = 0; k < 3; k++){
+
+                if (option == 1){  //horizontal
+                     final (i, j, k) = image((image.width -1)-i, j,k);
+                } 
+                else if (option == 2){ //vertical
+                    final (i, j, k) = image(i,(image.height -1)-j,k);
+                }
+                 else {
+                    cout << "Invalid option" << endl;  
+                }
+
+                }
+                
+        }
+    }
+final.saveImage("final.jpg");
+ }
+ return 0;
+ }
  
