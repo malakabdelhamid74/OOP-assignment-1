@@ -1,3 +1,13 @@
+//====================================================================================
+//======================================Phase1========================================
+// Rawan Osama : 20250233      |||| filter: 1, 5
+// Sama Tarek: 20250295        |||| filter: 2, 6
+// Malak Abdelhamid : 20250663 |||| filter: 3, 7
+// Salma Ayman : 20250880      |||| filter: 4, 8
+// SECTION: S29,S30
+//====================================================================================
+//====================================================================================
+
 #include "Image_Class.h"
 #include <cstdlib>
 using namespace std;
@@ -11,6 +21,7 @@ string savingFileName;
 int optionNum;
 char savingOption;
 bool isSaved;
+char answer;
 
 // for AdjustBrightness function
 int filterOptionNum;
@@ -28,6 +39,7 @@ void AdjustBrightness(Image &inputImage , int chosenOption , double p );
 //sama
 void BlackWhite(Image &inputImage);
 void RotateImage(Image &inputImage);
+void SaveImage(Image &inputImage);
 //Rawan
 void greyscale(Image& inputImage);
 void flip(Image& image, int option);
@@ -41,20 +53,42 @@ Image resize (Image &image, int w, int h);
 
 
 int main() {
-    cout << "Welcome to our Image Editor\n";
 
-        cout<<"Please enter the image file name: ";
+    cout << "Welcome to our Image Editor\n";
+    //cout << "Please enter the image file name: ";
+    //cin >> inputFileName;
+    while (true) {
+        cout << "Please enter the image file name: \n";
         cin >> inputFileName;
-        currentImage.loadNewImage(inputFileName);
+
+        try {
+            currentImage.loadNewImage(inputFileName);
+            cout << "Image loaded successfully!\n\n";
+            break;
+        }
+        catch (const invalid_argument& e) {
+            cout << "Error: " << e.what() << "\nPlease try again.\n\n";
+
+        }
+    }
+    //currentImage.loadNewImage(inputFileName);
+    //isSaved=false;
 
     while (true) {
         ShowMenu();
         cin >> optionNum;
         switch (optionNum) {
             case 1: //load a new image
-                cout<<"Please enter the new image file name: ";
+                cout << "Do you want to save the current image before loading a new one? (y/n): ";
+                cin >> answer;
+
+                if (answer == 'y' || answer == 'Y') {
+                    SaveImage(currentImage);
+                }
+                cout << "Please enter the new image file name: ";
                 cin >> inputFileName;
                 currentImage.loadNewImage(inputFileName);
+                isSaved=false;
                 break;
             case 2: //save
                 if (isSaved) {
@@ -67,49 +101,57 @@ int main() {
                 if (savingOption == 'Y' || savingOption == 'y') {
                     savingFileName = inputFileName;
                     currentImage.saveImage(savingFileName);
-                    cout << "the image is saved successfully!\n";
+                    isSaved=true;
+
+                    cout << "The image is saved successfully\n";
                     system(savingFileName.c_str());
                 }
                 else if (savingOption == 'N' ||savingOption == 'n') {
-                    cout << "Please enter the file name to save:  ";
-                    cin >> savingFileName;
-                    currentImage.saveImage(savingFileName);
-                    cout << "the image is saved successfully!\n";
-                    system(savingFileName.c_str());
+                    SaveImage(currentImage);
                 }else {
                     cout<<"Invalid answer\n";
                 }
-
                 break;
 
           case 11: // f1
                 greyscale(currentImage);
                 cout << "Greyscale filter is applied" << endl;
+                isSaved=false;
                 break;
  
             case 12 :
                 BlackWhite(currentImage);
+                cout<< "the image is black and white\n";
+                isSaved=false;
                 break;
             case 13 : //f3
                 InvertColors(currentImage);
                 cout<< "the image colors is inverted\n";
+                isSaved=false;
                 break;
 
             case 14:
+                cout<<"OPTIONs\n"
+                      " 1.Simple\n"
+                      " 2.Fancy\n";
+                cin>> filterOptionNum;
                 frame(currentImage);
                 cout<<"the image frame was applied successfully!\n";
-                system(inputFileName.c_str());
+                isSaved=false;
                 break;
 
             case 15: // f5
                 cout << "options\n 1.horizontal\n 2.Vertical\n please enter the option number:" << endl;
                 cin >> filterOptionNum;
+
                 flip(currentImage, filterOptionNum);
                 cout << "Image is flipped" << endl;
+                isSaved=false;
                 break; 
             case 16 :
                 RotateImage(currentImage);
                 cout<<"the image is rotated!\n";
+                isSaved=false;
                 break;
 
             case 17 ://f7
@@ -117,6 +159,7 @@ int main() {
                 cin >> filterOptionNum>> percentage;
                 AdjustBrightness(currentImage, filterOptionNum, percentage);
                 cout<<"the image brightness is adjusted successfully!\n";
+                isSaved=false;
                 break;
 
             case 18:
@@ -124,11 +167,18 @@ int main() {
                 cin>>desired_width;
                 cout<<"Enter the new height: ";
                 cin>>desired_height;
+
                 currentImage= resize(currentImage, desired_width, desired_height);
                 cout<<"the image was resized successfully!\n";
+                isSaved=false;
                 break;
-
             case  0:
+                cout << "Do you want to save the current image before exiting? (y/n): ";
+                cin >> answer;
+
+                if (answer == 'y' || answer == 'Y') {
+                    SaveImage(currentImage);
+                }
                 return 0  ;
             default:
                 cout<<"Invalid option number";
@@ -179,9 +229,6 @@ void ShowMenu() {
 
             "FILTERS\n"
             " 11.Greyscale\n"
-
-            "\nFILTERS\n"
-
             " 12.Black White\n"
             " 13.Invert Colors\n"
             " 14.frame\n"
@@ -225,7 +272,7 @@ void RotateImage(Image &inputImage) {
 
     if (angle == 90) {
 
-        Image rotated(inputImage.width,inputImage.height);
+        Image rotated(inputImage.height,inputImage.width);
 
         for (int i = 0; i < inputImage.width; ++i) {
             for (int j = 0; j < inputImage.height; ++j) {
@@ -260,7 +307,7 @@ void RotateImage(Image &inputImage) {
 
     else if (angle == 270) {
 
-        Image rotated(inputImage.width,inputImage.height);
+        Image rotated(inputImage.height,inputImage.width);
 
         for (int i = 0; i < inputImage.width; ++i) {
             for (int j = 0; j < inputImage.height; ++j) {
@@ -341,56 +388,112 @@ void paintPixels (int i , int j, Image &image){
 }
 // frame function
 void frame (Image &image){
-    // el frame el kbeer
-    for (int i = 0 ; i<image.width; i++){
-        for (int j = 0 ; j<10; j++){
-            paintPixels(i,j,image);
 
+    if (filterOptionNum==1) {
+        // el frame el kbeer
+        for (int i = 0 ; i<image.width; i++){
+            for (int j = 0 ; j<0.05*image.height; j++){
+                paintPixels(i,j,image);
+
+            }
         }
+
+        for (int i = 0 ; i<0.05*image.width; i++){
+            for (int j = 0 ; j<image.height; j++){
+                paintPixels(i,j,image);
+            }
+        }
+
+        for (int i = 0 ; i<image.width; i++){
+            for (int j = 0.95*image.height ; j< image.height; j++){
+                paintPixels(i,j,image);
+            }
+        }
+
+        for (int i = image.width-1 ; i>=0.95*image.width; i--){
+            for (int j = 0 ; j<image.height; j++){
+                paintPixels(i,j,image);
+            }
+        }
+
+
     }
+    else if (filterOptionNum==2) {
+       // el frame el kbeer
+            for (int i = 0 ; i<image.width; i++){
+                for (int j = 0 ; j<0.05*image.height; j++){
+                    paintPixels(i,j,image);
 
-    for (int i = 0 ; i<10; i++){
-        for (int j = 0 ; j<image.height; j++){
-            paintPixels(i,j,image);
-        }
-    }
+                }
+            }
 
-    for (int i = 0 ; i<image.width; i++){
-        for (int j = image.height-10 ; j< image.height; j++){
-            paintPixels(i,j,image);
-        }
-    }
+            for (int i = 0 ; i<0.05*image.width; i++){
+                for (int j = 0 ; j<image.height; j++){
+                    paintPixels(i,j,image);
+                }
+            }
 
-    for (int i = image.width-1 ; i>=image.width-10; i--){
-        for (int j = 0 ; j<image.height; j++){
-            paintPixels(i,j,image);
-        }
-    }
-    // el frame el so8ayer
-    for (int i = 13 ; i<image.width-13; i++){
-        for (int j = 13 ; j<18; j++){
-            paintPixels(i,j,image);
-        }
-    }
+            for (int i = 0 ; i<image.width; i++){
+                for (int j = 0.95*image.height ; j< image.height; j++) {
+                    paintPixels(i, j, image);
+                }
+            }
 
-    for (int i = 13 ; i<18; i++){
-        for (int j = 13 ; j<image.height-13; j++){
-            paintPixels(i,j,image);
+            for (int i = image.width - 1; i >= 0.95 * image.width; i--) {
+                for (int j = 0; j < image.height; j++) {
+                    paintPixels(i, j, image);
+                }
+            }
+            // el frame el kbeer
+            for (int i = 0; i < image.width; i++) {
+                for (int j = 0; j < 0.05 * image.height; j++) {
+                    paintPixels(i, j, image);
+                }
+            }
 
-        }
-    }
+            for (int i = 0; i < 0.05 * image.width; i++) {
+                for (int j = 0; j < image.height; j++) {
+                    paintPixels(i, j, image);
+                }
+            }
 
-    for (int i = 13 ; i<image.width-13; i++){
-        for (int j = image.height-18 ; j< image.height-13; j++){
-            paintPixels(i,j,image);
-        }
-    }
+            for (int i = 0; i < image.width; i++) {
+                for (int j = 0.95 * image.height; j < image.height; j++) {
+                    paintPixels(i, j, image);
+                }
+            }
 
-    for (int i = image.width-14 ; i>=image.width-18; i--){
-        for (int j = 13 ; j<image.height-13; j++){
-            paintPixels(i,j,image);
+            for (int i = image.width - 1; i >= 0.95 * image.width; i--) {
+                for (int j = 0; j < image.height; j++) {
+                    paintPixels(i, j, image);
+                }
+            }
+            // el frame el so8ayer
+            for (int i = 0.08 * image.width; i < image.width - (image.width * 0.08); i++) {
+                for (int j = image.height * 0.08; j < image.height * 0.1; j++) {
+                    paintPixels(i, j, image);
+                }
+            }
 
-        }
+            for (int i = image.width * 0.08; i < image.width * 0.1; i++) {
+                for (int j = 0.08 * image.height; j < image.height - (image.height * 0.08); j++) {
+                    paintPixels(i, j, image);
+                }
+            }
+
+            for (int i = image.width * 0.08; i < image.width - (image.width * 0.08); i++) {
+                for (int j = image.height * 0.9; j < image.height * 0.92; j++) {
+                    paintPixels(i, j, image);
+                }
+            }
+
+            for (int i = image.width * 0.92; i >= image.width * 0.9; i--) {
+                for (int j = image.height * 0.08; j < image.height - (image.height * 0.08); j++) {
+                    paintPixels(i, j, image);
+                }
+            }
+
+
     }
 }
 
@@ -410,4 +513,23 @@ Image resize (Image &image, int w, int h){
     }
     return new_image;
 
+}
+
+void SaveImage(Image &inputImage) {
+
+    while (true) {
+        cout << "Please enter the file name to save: ";
+        cin >> savingFileName;
+
+        try {
+            inputImage.saveImage(savingFileName);
+            isSaved = true;
+            cout << "The image is saved successfully!\n";
+            system(savingFileName.c_str());
+            break;
+        }
+        catch (const invalid_argument& e) {
+            cout << "Error: " << e.what() << "\nPlease specify a valid extension (.jpg, .bmp, .png).\n\n";
+        }
+    }
 }
