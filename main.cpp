@@ -1,6 +1,6 @@
 //====================================================================================
 //======================================Phase1========================================
-// Rawan Osama : 20250233      |||| filter: 1, 5
+// Rawan Osama : 20250233      |||| filter: 1, 5, 9, 13
 // Sama Tarek: 20250295        |||| filter: 2, 6
 // Malak Abdelhamid : 20250663 |||| filter: 3, 7
 // Salma Ayman : 20250880      |||| filter: 4, 8, 12, 16
@@ -11,6 +11,7 @@
 #include "Image_Class.h"
 #include <cstdlib>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 Image currentImage;
@@ -32,6 +33,9 @@ double percentage;
 // for RotateImage function
 int desired_width, desired_height;
 
+//for mergeimages function
+Image currentImage2;
+string imageName2;
 
 //malak
 void ShowMenu();
@@ -44,7 +48,8 @@ void SaveImage(Image &inputImage);
 //Rawan
 void greyscale(Image& inputImage);
 void flip(Image& image, int option);
-
+void mergeimages(Image& currentImage, Image& currentImage2, int option);
+void naturalsunlight(Image& currentImage);
 //salma
 
 void paintPixels (int i , int j, Image &image);
@@ -150,11 +155,11 @@ int main() {
             case 105: // f5
                 cout << "options\n 1.horizontal\n 2.Vertical\n please enter the option number:" << endl;
                 cin >> filterOptionNum;
-
                 flip(currentImage, filterOptionNum);
                 cout << "Image is flipped" << endl;
                 isSaved=false;
                 break; 
+            
             case 106 : //f6
                 RotateImage(currentImage);
                 cout<<"the image is rotated!\n";
@@ -174,17 +179,34 @@ int main() {
                 cin>>desired_width;
                 cout<<"Enter the new height: ";
                 cin>>desired_height;
-
                 currentImage= resize(currentImage, desired_width, desired_height);
                 cout<<"the image was resized successfully!\n";
                 isSaved=false;
                 break;
 
+            case 109: //f9
+                mergeimages(currentImage, currentImage2, filterOptionNum);
+                currentImage2.loadNewImage(imageName2);
+                cout << "options\n 1.imagesize_equal\n 2.image_size_different\n please enter the option number:" << endl;
+                cin >> filterOptionNum;
+                cout << "enter the name of the second image to be merged with the first image";
+                cin >> imageName2;
+                cout << "the images are merged " << endl;
+                isSaved=false;
+                break;
+            
             case 112: //f12
                 blur(currentImage);
                 cout<<"the image was blurred successfully!\n";
                 isSaved=false;
                 break;
+
+            case 113: //f13
+                    naturalsunlight(currentImage);
+                    cout << "the images are filtered successfully " << endl;
+                    isSaved=false;
+                    break;
+  
             case 116: //f16
                 infrared(currentImage);
                 isSaved=false;
@@ -249,12 +271,14 @@ void ShowMenu() {
             " 101.Greyscale\n"
             " 102.Black White\n"
             " 103.Invert Colors\n"
-            " 104.frame\n"
+            " 104.Frame\n"
             " 105.Flip Image\n"
             " 106.Rotate Image\n"
             " 107.Adjust Brightness\n"
             " 108.Resize\n"
+            " 109.Merge\n"
             " 112.Blur\n"
+            " 113.natural sunlight\n"
             " 116.Infrared\n"
 
             "0.Exit\n"
@@ -398,7 +422,60 @@ void flip(Image& image, int option){
         cout << "Invalid option" << endl;
     }
 }
+//mergeimage function
+void mergeimages(Image& currentImage, Image& currentImage2, int option){
+            
+        if(option ==1){   //two images are equal in size
+            
+            for(int i = 0; i < currentImage.width; i++){
+                for(int j = 0; j < currentImage.height; j++){
+                    for(int k = 0; k<3; k++){
 
+                        currentImage(i, j, k) = (currentImage(i, j, k)+currentImage2(i, j, k))/2;
+
+                    }
+
+                }
+            }
+        }
+
+        else if(option == 2){  //two images are different in size
+            int minwidth = min(currentImage.width, currentImage2.width);
+            int minheight = min(currentImage.height, currentImage2.height);
+
+            Image averageimage(minwidth, minheight);
+
+            for(int i = 0; i < minwidth; i++){
+                for(int j = 0; j < minheight; j++){
+                    for(int k = 0; k < 3; k++){
+
+                        averageimage(i, j, k) = (currentImage(i, j, k)+currentImage2(i, j, k))/2;
+                        
+                        
+                    }
+
+                }
+            }
+            currentImage = averageimage;
+        }
+      }
+//naturalsunlight function
+void naturalsunlight(Image& currentImage){
+
+                int red = 40;
+                int green = 40;
+                int blue = 25;
+
+            for(int i = 0; i < currentImage.width; i++ ){
+              for(int j = 0; j < currentImage.height; j++){
+
+             currentImage(i,j,0)=min(255, currentImage(i,j,0) + red);
+                currentImage(i,j,1)=min(255, currentImage(i,j,1) + green);
+                currentImage(i,j,2)=max(0, currentImage(i,j,2)- blue);
+              }  
+        }
+               
+        }
 
 //pixel painting function
 void paintPixels (int i , int j, Image &image){
