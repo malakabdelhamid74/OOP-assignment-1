@@ -3,13 +3,14 @@
 // Rawan Osama : 20250233      |||| filter: 1, 5
 // Sama Tarek: 20250295        |||| filter: 2, 6
 // Malak Abdelhamid : 20250663 |||| filter: 3, 7
-// Salma Ayman : 20250880      |||| filter: 4, 8
+// Salma Ayman : 20250880      |||| filter: 4, 8, 12, 16
 // SECTION: S29,S30
 //====================================================================================
 //====================================================================================
 
 #include "Image_Class.h"
 #include <cstdlib>
+#include <vector>
 using namespace std;
 
 Image currentImage;
@@ -49,6 +50,12 @@ void flip(Image& image, int option);
 void paintPixels (int i , int j, Image &image);
 void frame (Image &image);
 Image resize (Image &image, int w, int h);
+int prefixBlurBoxAverage(vector<vector<int>>& p, int pixelx,
+    int pixely, int r, int width, int height);
+void blur(Image & currentImage);
+void infrared (Image&image);
+
+
 
 
 
@@ -113,24 +120,24 @@ int main() {
                 }
                 break;
 
-          case 11: // f1
+          case 101: // f1
                 greyscale(currentImage);
                 cout << "Greyscale filter is applied" << endl;
                 isSaved=false;
                 break;
  
-            case 12 :
+            case 102 : //f2
                 BlackWhite(currentImage);
                 cout<< "the image is black and white\n";
                 isSaved=false;
                 break;
-            case 13 : //f3
+            case 103 : //f3
                 InvertColors(currentImage);
                 cout<< "the image colors is inverted\n";
                 isSaved=false;
                 break;
 
-            case 14:
+            case 104: //f4
                 cout<<"OPTIONs\n"
                       " 1.Simple\n"
                       " 2.Fancy\n";
@@ -140,7 +147,7 @@ int main() {
                 isSaved=false;
                 break;
 
-            case 15: // f5
+            case 105: // f5
                 cout << "options\n 1.horizontal\n 2.Vertical\n please enter the option number:" << endl;
                 cin >> filterOptionNum;
 
@@ -148,13 +155,13 @@ int main() {
                 cout << "Image is flipped" << endl;
                 isSaved=false;
                 break; 
-            case 16 :
+            case 106 : //f6
                 RotateImage(currentImage);
                 cout<<"the image is rotated!\n";
                 isSaved=false;
                 break;
 
-            case 17 ://f7
+            case 107 ://f7
                 cout<< "OPTIONS\n 1.Darken\n 2.Lighten\nPlease enter the option number and percentage :";
                 cin >> filterOptionNum>> percentage;
                 AdjustBrightness(currentImage, filterOptionNum, percentage);
@@ -162,7 +169,7 @@ int main() {
                 isSaved=false;
                 break;
 
-            case 18:
+            case 108: //f8
                 cout<<"Enter the new width: ";
                 cin>>desired_width;
                 cout<<"Enter the new height: ";
@@ -172,6 +179,17 @@ int main() {
                 cout<<"the image was resized successfully!\n";
                 isSaved=false;
                 break;
+
+            case 112: //f12
+                blur(currentImage);
+                cout<<"the image was blurred successfully!\n";
+                isSaved=false;
+                break;
+            case 116: //f16
+                infrared(currentImage);
+                isSaved=false;
+                break;
+
             case  0:
                 cout << "Do you want to save the current image before exiting? (y/n): ";
                 cin >> answer;
@@ -228,14 +246,16 @@ void ShowMenu() {
             "2.Save\n"
 
             "FILTERS\n"
-            " 11.Greyscale\n"
-            " 12.Black White\n"
-            " 13.Invert Colors\n"
-            " 14.frame\n"
-            " 15.Flip Image\n"
-            " 16.Rotate Image\n"
-            " 17.Adjust Brightness\n"
-            " 18.resize\n"
+            " 101.Greyscale\n"
+            " 102.Black White\n"
+            " 103.Invert Colors\n"
+            " 104.frame\n"
+            " 105.Flip Image\n"
+            " 106.Rotate Image\n"
+            " 107.Adjust Brightness\n"
+            " 108.Resize\n"
+            " 112.Blur\n"
+            " 116.Infrared\n"
 
             "0.Exit\n"
             "Please enter the option number: ";
@@ -530,6 +550,75 @@ void SaveImage(Image &inputImage) {
         }
         catch (const invalid_argument& e) {
             cout << "Error: " << e.what() << "\nPlease specify a valid extension (.jpg, .bmp, .png).\n\n";
+        }
+    }
+}
+
+//prefix blur box average function
+int prefixBlurBoxAverage(vector<vector<int>>& p, int pixelx, int pixely, int r, int width, int height) {
+    int left   = pixelx - r;
+    int right  = pixelx + r;
+    int up    = pixely - r;
+    int down = pixely + r;
+
+
+    if (left < 0) left = 0;
+    if (up < 0) up = 0;
+    if (right > width - 1) right = width - 1;
+    if (down > height - 1) down = height - 1;
+
+    int sum = p[right + 1][down + 1] - p[left][down + 1]- p[right + 1][up] + p[left][up];
+
+    int num = (right-left+1) * (down -up+1);
+    return sum / num;
+}
+//blur filter function
+void blur(Image & currentImage){
+    Image newImage = currentImage;
+
+    int blurDegree;
+    cout << "Enter the blur percentage:\n";
+    cin >> blurDegree;
+    int radius = 2 * blurDegree / 10;
+
+    for (int k = 0; k < currentImage.channels; k++) {
+
+        vector<vector<int>> p(currentImage.width + 1, vector<int>(currentImage.height + 1));
+        for (int x = 0; x < currentImage.width + 1; x++) {
+            p[x][0] = 0;
+        }
+        for (int y = 0; y < currentImage.height + 1; y++) {
+            p[0][y] = 0;
+        }
+        for (int x = 1; x < currentImage.width + 1; x++) {
+            for (int y = 1; y < currentImage.height + 1; y++) {
+                p[x][y] = p[x-1][y] + p[x][y-1] - p[x-1][y-1]+
+                    currentImage(x-1, y-1, k);
+            }
+        }
+
+        for (int i = 0; i < currentImage.width; i++) {
+            for (int j = 0; j < currentImage.height; j++) {
+                newImage(i, j, k) =
+                    prefixBlurBoxAverage(p, i, j, radius,
+                    currentImage.width, currentImage.height);
+            }
+        }
+    }
+
+    currentImage = newImage;
+}
+//infrared filter
+void infrared (Image&image){
+    for (int i=0 ; i<image.width; i++){
+        for(int j=0; j<image.height; j++){
+            int R = 255-image(i, j, 0);
+            int G = 255-image(i, j, 1);
+            int B = 255-image(i, j, 2);
+            int average = (R + G + B) / 3;
+            image(i,j,0)=255;
+            image(i,j,1)=average;
+            image(i,j,2)=average;
         }
     }
 }
