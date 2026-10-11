@@ -1,7 +1,11 @@
 //====================================================================================
 //======================================Phase1========================================
 // Rawan Osama : 20250233      |||| filter: 1, 5, 9, 13
+
 // Sama Tarek: 20250295        |||| filter: 2, 6
+
+// Sama Tarek: 20250295        |||| filter: 2, 6 ,10,14
+
 // Malak Abdelhamid : 20250663 |||| filter: 3, 7
 // Salma Ayman : 20250880      |||| filter: 4, 8, 12, 16
 // SECTION: S29,S30
@@ -12,6 +16,7 @@
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 using namespace std;
 
 Image currentImage;
@@ -44,6 +49,9 @@ void AdjustBrightness(Image &inputImage , int chosenOption , double p );
 //sama
 void BlackWhite(Image &inputImage);
 void RotateImage(Image &inputImage);
+void DetectEdges(Image &inputImage);
+void TVEffect(Image &inputImage);
+void SkewImage(Image &inputImage);
 void SaveImage(Image &inputImage);
 //Rawan
 void greyscale(Image& inputImage);
@@ -130,7 +138,7 @@ int main() {
                 cout << "Greyscale filter is applied" << endl;
                 isSaved=false;
                 break;
- 
+
             case 102 : //f2
                 BlackWhite(currentImage);
                 cout<< "the image is black and white\n";
@@ -158,8 +166,8 @@ int main() {
                 flip(currentImage, filterOptionNum);
                 cout << "Image is flipped" << endl;
                 isSaved=false;
-                break; 
-            
+                break;
+
             case 106 : //f6
                 RotateImage(currentImage);
                 cout<<"the image is rotated!\n";
@@ -194,7 +202,11 @@ int main() {
                 cout << "the images are merged " << endl;
                 isSaved=false;
                 break;
-            
+            case 110:
+                DetectEdges(currentImage);
+                cout<<"the images are filtered successfully " << endl;
+                isSaved=false;
+
             case 112: //f12
                 blur(currentImage);
                 cout<<"the image was blurred successfully!\n";
@@ -206,9 +218,21 @@ int main() {
                     cout << "the images are filtered successfully " << endl;
                     isSaved=false;
                     break;
-  
+
+            case 114:
+                TVEffect(currentImage);
+                cout<<"the image was TVEffect successfully!\n";
+                isSaved=false;
+                break;
+
             case 116: //f16
                 infrared(currentImage);
+                isSaved=false;
+                break;
+
+            case 117:
+                SkewImage(currentImage);
+                cout<<"the image was skewed successfully!\n";
                 isSaved=false;
                 break;
 
@@ -277,9 +301,13 @@ void ShowMenu() {
             " 107.Adjust Brightness\n"
             " 108.Resize\n"
             " 109.Merge\n"
+            " 110.DetectEdges\n"
             " 112.Blur\n"
             " 113.natural sunlight\n"
+            "114.TVEffect\n"
             " 116.Infrared\n"
+            "117.Skew Image\n"
+
 
             "0.Exit\n"
             "Please enter the option number: ";
@@ -293,17 +321,18 @@ void BlackWhite(Image &inputImage) {
             int G = inputImage(i, j, 1);
             int B = inputImage(i, j, 2);
 
-            int average = (R + G + B) / 3;
+            int average = (2*R +3* G + B) / 6;
+            int newPixel;
 
             if (average >= 127) {
-                average = 255;
+                newPixel = 255;
             }
             else {
-                average = 0;
+                 newPixel= 0;
             }
 
             for (int k = 0; k < inputImage.channels; ++k) {
-                inputImage(i, j, k) = average;
+                inputImage(i, j, k) = newPixel;
             }
         }
     }
@@ -425,8 +454,10 @@ void flip(Image& image, int option){
 //mergeimage function
 void mergeimages(Image& currentImage, Image& currentImage2, int option){
             
+
+
         if(option ==1){   //two images are equal in size
-            
+
             for(int i = 0; i < currentImage.width; i++){
                 for(int j = 0; j < currentImage.height; j++){
                     for(int k = 0; k<3; k++){
@@ -450,6 +481,7 @@ void mergeimages(Image& currentImage, Image& currentImage2, int option){
                     for(int k = 0; k < 3; k++){
 
                         averageimage(i, j, k) = (currentImage(i, j, k)+currentImage2(i, j, k))/2;
+
                         
                         
                     }
@@ -698,4 +730,116 @@ void infrared (Image&image){
             image(i,j,2)=average;
         }
     }
+
+}
+void DetectEdges(Image &inputImage) {
+
+    Image edges(inputImage.width, inputImage.height);
+
+    int Gx[3][3] = {
+        {-1, 0, 1},
+        {-1, 0, 1},
+        {-1, 0, 1}
+    };
+
+    int Gy[3][3] = {
+        {-1, -1, -1},
+        { 0,  0,  0},
+        { 1,  1,  1}
+    };
+
+    for (int i = 0; i < edges.width; i++) {
+        for (int j = 0; j < edges.height; j++) {
+            for (int k = 0; k < edges.channels; k++) {
+                edges(i, j, k) = 255;
+            }
+        }
+    }
+
+    for (int i = 1; i < inputImage.width - 1; i++) {
+        for (int j = 1; j < inputImage.height - 1; j++) {
+
+            int gx = 0;
+            int gy = 0;
+
+            for (int x = -1; x <= 1; x++) {
+                for (int y = -1; y <= 1; y++) {
+
+                    int R = inputImage(i + x, j + y, 0);
+                    int G = inputImage(i + x, j + y, 1);
+                    int B = inputImage(i + x, j + y, 2);
+
+                    int average = (R + G + B) / 3;
+
+                    gx += average * Gx[x + 1][y + 1];
+                    gy += average * Gy[x + 1][y + 1];
+                }
+            }
+
+            int value = sqrt(gx * gx + gy * gy);
+
+            if (value > 100) {
+                value = 0;
+            }
+            else {
+                value = 255;
+            }
+
+            for (int k = 0; k < edges.channels; k++) {
+                edges(i, j, k) = value;
+            }
+        }
+    }
+
+    inputImage = edges;
+}
+void TVEffect(Image &inputImage) {
+
+    for (int i = 0; i < inputImage.width; i++) {
+        for (int j = 0; j < inputImage.height; j++) {
+
+            if (j % 4 == 0) {
+                for (int k = 0; k < inputImage.channels; k++) {
+                    inputImage(i, j, k) =
+                        inputImage(i, j, k) / 2;
+                }
+            }
+        }
+    }
+}
+void SkewImage(Image &inputImage) {
+    double angle;
+    cout << "Enter skew angle: ";
+    cin >> angle;
+
+    double radians = angle * 3.14159265 / 180.0;
+
+    int width = inputImage.width;
+    int height = inputImage.height;
+
+    int shift = abs((int)(height * tan(radians)));
+
+    Image skewed(width + shift, height);
+
+    for (int i = 0; i < skewed.width; i++) {
+        for (int j = 0; j < skewed.height; j++) {
+            for (int k = 0; k < inputImage.channels; k++) {
+                skewed(i, j, k) = 255;
+            }
+        }
+    }
+
+    for (int i = 0; i < width; i++) {
+        for (int j = 0; j < height; j++) {
+            int newX = i + (height - 1 - j) * tan(radians);
+
+            if (newX >= 0 && newX < skewed.width) {
+                for (int k = 0; k < inputImage.channels; k++) {
+                    skewed(newX, j, k) = inputImage(i, j, k);
+                }
+            }
+        }
+    }
+
+    inputImage = skewed;
 }
