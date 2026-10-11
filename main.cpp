@@ -2,11 +2,11 @@
 //======================================Phase1========================================
 // Rawan Osama : 20250233      |||| filter: 1, 5, 9, 13
 
-// Sama Tarek: 20250295        |||| filter: 2, 6
+
 
 // Sama Tarek: 20250295        |||| filter: 2, 6 ,10,14
 
-// Malak Abdelhamid : 20250663 |||| filter: 3, 7
+// Malak Abdelhamid : 20250663 |||| filter: 3, 7,11,15
 // Salma Ayman : 20250880      |||| filter: 4, 8, 12, 16
 // SECTION: S29,S30
 //====================================================================================
@@ -42,41 +42,47 @@ int desired_width, desired_height;
 Image currentImage2;
 string imageName2;
 
-//malak
+//menu and save
 void ShowMenu();
+void SaveImage(Image &inputImage);
+
+//malak
 void InvertColors(Image &inputImage);
 void AdjustBrightness(Image &inputImage , int chosenOption , double p );
+void Crop (Image &currentImage);
+void PurpleFilter(Image &currentImage);
+
 //sama
 void BlackWhite(Image &inputImage);
 void RotateImage(Image &inputImage);
 void DetectEdges(Image &inputImage);
 void TVEffect(Image &inputImage);
-void SkewImage(Image &inputImage);
-void SaveImage(Image &inputImage);
+
 //Rawan
 void greyscale(Image& inputImage);
 void flip(Image& image, int option);
 void mergeimages(Image& currentImage, Image& currentImage2, int option);
 void naturalsunlight(Image& currentImage);
-//salma
 
+//salma
 void paintPixels (int i , int j, Image &image);
 void frame (Image &image);
 Image resize (Image &image, int w, int h);
 int prefixBlurBoxAverage(vector<vector<int>>& p, int pixelx,
-    int pixely, int r, int width, int height);
+                         int pixely, int r, int width, int height);
 void blur(Image & currentImage);
 void infrared (Image&image);
 
 
-
+// bonus filters
+void SkewImage(Image &inputImage);
+void OilPaint(Image& currentImage);
 
 
 int main() {
 
     cout << "Welcome to our Image Editor\n";
-    //cout << "Please enter the image file name: ";
-    //cin >> inputFileName;
+
     while (true) {
         cout << "Please enter the image file name: \n";
         cin >> inputFileName;
@@ -91,23 +97,37 @@ int main() {
 
         }
     }
-    //currentImage.loadNewImage(inputFileName);
-    //isSaved=false;
+
 
     while (true) {
         ShowMenu();
         cin >> optionNum;
         switch (optionNum) {
             case 1: //load a new image
-                cout << "Do you want to save the current image before loading a new one? (y/n): ";
-                cin >> answer;
-
-                if (answer == 'y' || answer == 'Y') {
-                    SaveImage(currentImage);
+                if (!isSaved) {
+                    cout << "Do you want to save the current image before loading a new one? (y/n): ";
+                    cin >> answer;
+                    if (answer == 'y' || answer == 'Y') {
+                        SaveImage(currentImage);
+                    }
                 }
-                cout << "Please enter the new image file name: ";
-                cin >> inputFileName;
-                currentImage.loadNewImage(inputFileName);
+                //cout << "Please enter the new image file name: ";
+                //cin >> inputFileName;
+                while (true) {
+                    cout << "Please enter the image file name: \n";
+                    cin >> inputFileName;
+
+                    try {
+                        currentImage.loadNewImage(inputFileName);
+                        cout << "Image loaded successfully!\n\n";
+                        break;
+                    }
+                    catch (const invalid_argument& e) {
+                        cout << "Error: " << e.what() << "\nPlease try again.\n\n";
+
+                    }
+                }
+                //currentImage.loadNewImage(inputFileName);
                 isSaved=false;
                 break;
             case 2: //save
@@ -193,12 +213,12 @@ int main() {
                 break;
 
             case 109: //f9
-                mergeimages(currentImage, currentImage2, filterOptionNum);
-                currentImage2.loadNewImage(imageName2);
                 cout << "options\n 1.imagesize_equal\n 2.image_size_different\n please enter the option number:" << endl;
                 cin >> filterOptionNum;
                 cout << "enter the name of the second image to be merged with the first image";
                 cin >> imageName2;
+                currentImage2.loadNewImage(imageName2);
+                mergeimages(currentImage, currentImage2, filterOptionNum);
                 cout << "the images are merged " << endl;
                 isSaved=false;
                 break;
@@ -207,6 +227,11 @@ int main() {
                 cout<<"the images are filtered successfully " << endl;
                 isSaved=false;
 
+            case 111:
+                Crop(currentImage);
+                isSaved=false;
+                break;
+
             case 112: //f12
                 blur(currentImage);
                 cout<<"the image was blurred successfully!\n";
@@ -214,14 +239,18 @@ int main() {
                 break;
 
             case 113: //f13
-                    naturalsunlight(currentImage);
-                    cout << "the images are filtered successfully " << endl;
-                    isSaved=false;
-                    break;
+                naturalsunlight(currentImage);
+                cout << "the images are filtered successfully " << endl;
+                isSaved = false;
+                break;
 
             case 114:
                 TVEffect(currentImage);
                 cout<<"the image was TVEffect successfully!\n";
+                isSaved=false;
+                break;
+            case 115:
+                PurpleFilter(currentImage);
                 isSaved=false;
                 break;
 
@@ -233,6 +262,11 @@ int main() {
             case 117:
                 SkewImage(currentImage);
                 cout<<"the image was skewed successfully!\n";
+                isSaved=false;
+                break;
+            case 118:
+                OilPaint(currentImage);
+                cout<<"The image was oil painted successfully!\n";
                 isSaved=false;
                 break;
 
@@ -302,12 +336,14 @@ void ShowMenu() {
             " 108.Resize\n"
             " 109.Merge\n"
             " 110.DetectEdges\n"
+            " 111.Crop\n"
             " 112.Blur\n"
             " 113.natural sunlight\n"
-            "114.TVEffect\n"
+            " 114.TVEffect\n"
+            " 115.Purple filter\n"
             " 116.Infrared\n"
-            "117.Skew Image\n"
-
+            " 117.Skew Image\n"
+            " 118.Oil painting\n"
 
             "0.Exit\n"
             "Please enter the option number: ";
@@ -453,8 +489,6 @@ void flip(Image& image, int option){
 }
 //mergeimage function
 void mergeimages(Image& currentImage, Image& currentImage2, int option){
-            
-
 
         if(option ==1){   //two images are equal in size
 
@@ -482,10 +516,7 @@ void mergeimages(Image& currentImage, Image& currentImage2, int option){
 
                         averageimage(i, j, k) = (currentImage(i, j, k)+currentImage2(i, j, k))/2;
 
-                        
-                        
                     }
-
                 }
             }
             currentImage = averageimage;
@@ -843,3 +874,75 @@ void SkewImage(Image &inputImage) {
 
     inputImage = skewed;
 }
+
+void Crop (Image &currentImage) {
+    int startingPointX,startingPointY,desiredWidth,desiredHeight;
+    cout << "Please enter the starting point: ";
+    cin>>startingPointX>>startingPointY;
+    cout<<"Please enter the desired width and height: ";
+    cin>>desiredWidth>>desiredHeight;
+
+    if (startingPointX < 0 || startingPointY < 0 ||
+        startingPointX + desiredWidth > currentImage.width ||
+        startingPointY + desiredHeight > currentImage.height) {
+        cout << "Invalid dimensions\n";
+        return;
+        }
+    Image croppedImage(desiredWidth,desiredHeight);
+
+    for (int i=0 ;i<desiredWidth;++i ) {
+        for (int j=0 ;j<desiredHeight;++j ) {
+            for (int k=0 ;k<3;++k) {
+                croppedImage(i, j, k) = currentImage(startingPointX+i, startingPointY+j, k);
+            }
+        }
+    }
+
+    currentImage = croppedImage;
+    cout<<"The Image is cropped successfully!\n";
+}
+void PurpleFilter(Image &currentImage) {
+
+    for (int i = 0; i < currentImage.width ; i++) {
+        for (int j = 0; j < currentImage.height; j++) {
+
+            int R=currentImage(i,j,0);
+            int G=currentImage(i,j,1);
+            int B=currentImage(i,j,2);
+
+            int RN=static_cast<int>(R*1.15);
+            int GN=static_cast<int>(G*0.8);
+            int BN=static_cast<int>(B*1.25);
+
+            if (RN>255){RN=255;}
+            if (BN>255){BN=255;}
+
+            currentImage(i,j,0)=RN;
+            currentImage(i,j,1)=GN;
+            currentImage(i,j,2)=BN;
+
+        }
+    }
+    cout<<"The image is purple successfully\n";
+
+}
+void OilPaint(Image& currentImage) {
+    int levels = 10;
+
+    for (int i = 0; i < currentImage.width; i++) {
+        for (int j = 0; j < currentImage.height; j++) {
+            for (int k = 0; k < currentImage.channels; k++) {
+
+                int pixelValue = currentImage(i, j, k);
+                int quantizedValue = (pixelValue * levels / 256) * (255 / (levels));
+
+
+                if (quantizedValue > 255) quantizedValue = 255;
+                if (quantizedValue < 0) quantizedValue = 0;
+
+                currentImage(i, j, k) = quantizedValue;
+            }
+        }
+    }
+}
+
