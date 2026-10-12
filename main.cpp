@@ -985,3 +985,72 @@ void OilPaint(Image& currentImage) {
     }
 }
 
+//====================================================================================
+// GUI support (the ONLY block added for the GUI - main() itself is untouched)
+// gui.py starts main.exe with environment variables:
+//   MINIPS_IN / MINIPS_OUT = image to read / image to write
+//   MINIPS_CODE            = filter number (same numbers as the menu)
+//   MINIPS_ARGS            = the answers you would normally type (option, percentage ...)
+// This object is created BEFORE main() runs. If MINIPS_CODE is not set (normal
+// use) it does nothing. If it is set, it runs that one filter, saves, and exits.
+//====================================================================================
+#include <sstream>
+
+struct GuiLauncher {
+    GuiLauncher() {
+        const char* codeText = getenv("MINIPS_CODE");
+        if (!codeText) return;                       // normal console mode
+
+        const char* inText  = getenv("MINIPS_IN");
+        const char* outText = getenv("MINIPS_OUT");
+        const char* argText = getenv("MINIPS_ARGS");
+        if (!inText || !outText) exit(2);
+        int code = atoi(codeText);
+
+        // Some filters ask with cin, so give them the values as if typed.
+        istringstream fakeInput(argText ? argText : "");
+        cin.rdbuf(fakeInput.rdbuf());
+
+        try {
+            currentImage.loadNewImage(inText);
+        }
+        catch (const invalid_argument&) {
+            exit(2);                                 // could not load
+        }
+
+        switch (code) {
+            case 101: greyscale(currentImage); break;
+            case 102: BlackWhite(currentImage); break;
+            case 103: InvertColors(currentImage); break;
+            case 104: cin >> filterOptionNum; frame(currentImage); break;
+            case 105: cin >> filterOptionNum; flip(currentImage, filterOptionNum); break;
+            case 106: RotateImage(currentImage); break;
+            case 107: cin >> filterOptionNum >> percentage;
+                      AdjustBrightness(currentImage, filterOptionNum, percentage); break;
+            case 108: cin >> desired_width >> desired_height;
+                      currentImage = resize(currentImage, desired_width, desired_height); break;
+            case 109: cin >> filterOptionNum >> imageName2;
+                      currentImage2.loadNewImage(imageName2);
+                      mergeimages(currentImage, currentImage2, filterOptionNum); break;
+            case 110: DetectEdges(currentImage); break;
+            case 111: Crop(currentImage); break;
+            case 112: blur(currentImage); break;
+            case 113: naturalsunlight(currentImage); break;
+            case 114: TVEffect(currentImage); break;
+            case 115: PurpleFilter(currentImage); break;
+            case 116: infrared(currentImage); break;
+            case 117: SkewImage(currentImage); break;
+            case 118: OilPaint(currentImage); break;
+            default: exit(3);                        // unknown filter
+        }
+
+        try {
+            currentImage.saveImage(outText);
+        }
+        catch (const invalid_argument&) {
+            exit(4);                                 // could not save
+        }
+        exit(0);
+    }
+};
+GuiLauncher guiLauncher;   // must stay at the END of the file (after all other globals)
