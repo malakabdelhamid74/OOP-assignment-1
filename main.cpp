@@ -1,14 +1,11 @@
 //====================================================================================
 //======================================Phase1========================================
 // Rawan Osama : 20250233      |||| filter: 1, 5, 9, 13
-
-
-
 // Sama Tarek: 20250295        |||| filter: 2, 6 ,10,14
-
-// Malak Abdelhamid : 20250663 |||| filter: 3, 7,11,15
+// Malak Abdelhamid : 20250663 |||| filter: 3, 7, 11,15
 // Salma Ayman : 20250880      |||| filter: 4, 8, 12, 16
-// SECTION: S29,S30
+// the menu and bonus filters were made by the whole team
+// SECTION: S29,S30 and S1,2
 //====================================================================================
 //====================================================================================
 
@@ -111,8 +108,6 @@ int main() {
                         SaveImage(currentImage);
                     }
                 }
-                //cout << "Please enter the new image file name: ";
-                //cin >> inputFileName;
                 while (true) {
                     cout << "Please enter the image file name: \n";
                     cin >> inputFileName;
@@ -215,7 +210,7 @@ int main() {
             case 109: //f9
                 cout << "options\n 1.imagesize_equal\n 2.image_size_different\n please enter the option number:" << endl;
                 cin >> filterOptionNum;
-                cout << "enter the name of the second image to be merged with the first image";
+                cout << "enter the name of the second image to be merged with the first image \n";
                 cin >> imageName2;
                 currentImage2.loadNewImage(imageName2);
                 mergeimages(currentImage, currentImage2, filterOptionNum);
@@ -224,9 +219,9 @@ int main() {
                 break;
             case 110:
                 DetectEdges(currentImage);
-                cout<<"the images are filtered successfully " << endl;
+                cout<<"the image is detected " << endl;
                 isSaved=false;
-
+                break;
             case 111:
                 Crop(currentImage);
                 isSaved=false;
@@ -504,24 +499,68 @@ void mergeimages(Image& currentImage, Image& currentImage2, int option){
             }
         }
 
-        else if(option == 2){  //two images are different in size
-            int minwidth = min(currentImage.width, currentImage2.width);
-            int minheight = min(currentImage.height, currentImage2.height);
+        else if(option == 2) {
+            //two images are different in size
 
-            Image averageimage(minwidth, minheight);
+            int area_currentImage = currentImage.width * currentImage.height;
 
-            for(int i = 0; i < minwidth; i++){
-                for(int j = 0; j < minheight; j++){
-                    for(int k = 0; k < 3; k++){
+            int area_currentImage2 =
+                currentImage2.width * currentImage2.height;
 
-                        averageimage(i, j, k) = (currentImage(i, j, k)+currentImage2(i, j, k))/2;
+            int finalwidth, finalheight;
 
+            if (area_currentImage > area_currentImage2) {
+                finalwidth = currentImage.width;
+                finalheight = currentImage.height;
+
+                Image resizedImage(finalwidth, finalheight);
+
+                for (int i = 0; i < finalwidth; i++) {
+                    for (int j = 0; j < finalheight; j++) {
+
+                        int x = i * currentImage2.width / finalwidth;
+                        int y = j * currentImage2.height / finalheight;
+
+                        for (int k = 0; k < 3; k++) {
+                            resizedImage(i, j, k) = currentImage2(x, y, k);
+                        }
                     }
                 }
+
+                currentImage2 = resizedImage;
             }
-            currentImage = averageimage;
+            else {
+                finalwidth = currentImage2.width;
+                finalheight = currentImage2.height;
+
+
+                Image resizedImage(finalwidth, finalheight);
+
+                for (int i = 0; i < finalwidth; i++) {
+                    for (int j = 0; j < finalheight; j++) {
+
+                        int x = i * currentImage.width / finalwidth;
+                        int y = j * currentImage.height / finalheight;
+
+                        for (int k = 0; k < 3; k++) {
+                            resizedImage(i, j, k) = currentImage(x, y, k);
+                        }
+                    }
+                }
+
+                currentImage = resizedImage;
+            }
         }
-      }
+        for (int X = 0; X < currentImage.width; X++) {
+            for (int Y = 0; Y < currentImage.height; Y++) {
+                for (int k = 0; k < 3; k++) {
+
+                    currentImage(X, Y, k) =
+                        (currentImage(X, Y, k) + currentImage2(X, Y, k)) / 2;
+                }
+            }
+        }
+    }
 //naturalsunlight function
 void naturalsunlight(Image& currentImage){
 
@@ -885,7 +924,7 @@ void Crop (Image &currentImage) {
     if (startingPointX < 0 || startingPointY < 0 ||
         startingPointX + desiredWidth > currentImage.width ||
         startingPointY + desiredHeight > currentImage.height) {
-        cout << "Invalid dimensions\n";
+        cout << "Invalid dimensions or starting point\n";
         return;
         }
     Image croppedImage(desiredWidth,desiredHeight);
